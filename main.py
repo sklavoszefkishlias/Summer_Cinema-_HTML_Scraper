@@ -59,11 +59,23 @@ def fetch_movie_data():
             cinema = item.find("h2", class_="item-title").text.strip()
             location = item.find("div", class_= "details").text.strip()
 
+            movie_list = item.find_all("div", class_="item schedule-item")
+            title_list = []
+            for movie in movie_list:
+                title_list.append(movie.find("h3").text.strip())
+
+                
+
+            ticket_prices = item.find("p", class_="summary").text.strip()
 
             '''price = item.find("h4", class_="price").text.strip()
             description = item.find("p", class_="description").text.strip()'''
             print(cinema)
             print(location)
+            print(title_list)
+
+            print(ticket_prices)
+
             '''# Print the results neatly
             print(f"📦 Cinema Name: {cinema}")
             print(f"💰 Price: {price}")
