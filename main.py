@@ -1,7 +1,7 @@
 import requests
 import os
 from bs4 import BeautifulSoup
-
+import time
 # The URL of the page we want to scrape
 URL = "https://www.athinorama.gr/cinema/guide/therinoi/cinemas/"
 
@@ -14,13 +14,13 @@ CACHE_FILE = "cached_page.html"
 
 def get_html_content():
     # 1. Check if we already have the file saved locally
-    if os.path.exists(CACHE_FILE):
+    if os.path.exists(CACHE_FILE) and (time.time() - os.path.getmtime(CACHE_FILE) < 86400): #Sees if you have relevant info(checks if its today's data)
         print("📁 Found cached HTML file. Loading from disk...")
         with open(CACHE_FILE, "r", encoding="utf-8") as file:
             return file.read()
             
     # 2. If the file doesn't exist, download it from the internet
-    print("🌐 Cached file not found. Requesting from live website...")
+    print("Requesting from live website...")
     try:
         response = requests.get(URL, headers=HEADERS)
         response.raise_for_status()
@@ -68,19 +68,12 @@ def fetch_movie_data():
 
             ticket_prices = item.find("p", class_="summary").text.strip()
 
-            '''price = item.find("h4", class_="price").text.strip()
-            description = item.find("p", class_="description").text.strip()'''
             print(cinema)
             print(location)
             print(title_list)
 
             print(ticket_prices)
 
-            '''# Print the results neatly
-            print(f"📦 Cinema Name: {cinema}")
-            print(f"💰 Price: {price}")
-            print(f"📝 Info: {description}")
-            print("-" * 40)'''
             
 
     except AttributeError:
