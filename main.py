@@ -37,6 +37,26 @@ def get_html_content():
         return None
 
 
+def datetime_title_parser(movie_list):
+    title_list = []
+    datetime_list = []
+    for movie in movie_list:
+        title_list.append(movie.find("h3").text.strip())
+        title = movie.find_all("span", class_= "time")
+        concated_datetime = ""
+        for t in title:
+            t = t.text.strip()
+            concated_datetime += t
+        datetime_list.append(concated_datetime)
+    return title_list, datetime_list
+        
+    
+
+
+
+
+
+
 
 
 
@@ -53,17 +73,22 @@ def fetch_movie_data():
         items = soup.find_all("div", class_="item card-item")
         print(f"--- Found {len(items)} Items ---\n")
         print(type(items))
-
+        flag = 0
         for item in items:
             # Extract text and strip out extra whitespace
             cinema = item.find("h2", class_="item-title").text.strip()
             location = item.find("div", class_= "details").text.strip()
 
-            movie_list = item.find_all("div", class_="item schedule-item")
-            title_list = []
-            for movie in movie_list:
-                title_list.append(movie.find("h3").text.strip())
+            movie_list = item.find_all("div", class_="item schedule-item") #Fetches all the movies from the cinema
 
+            title_list = []
+            date_time_list = []
+
+            title_list, date_time_list = datetime_title_parser(movie_list)
+
+            if len(date_time_list) != len(title_list):
+                flag = 1
+                
                 
 
             ticket_prices = item.find("p", class_="summary").text.strip()
@@ -71,8 +96,13 @@ def fetch_movie_data():
             print(cinema)
             print(location)
             print(title_list)
+            print(date_time_list)
 
             print(ticket_prices)
+        if flag == 1:
+            print("somthing bad happand")
+        elif flag == 0:
+            print("all good") 
 
             
 
