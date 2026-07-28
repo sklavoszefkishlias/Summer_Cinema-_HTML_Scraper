@@ -2,6 +2,7 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import time
+import json
 # The URL of the page we want to scrape
 URL = "https://www.athinorama.gr/cinema/guide/therinoi/cinemas/"
 
@@ -11,6 +12,7 @@ HEADERS = {
 }
 
 CACHE_FILE = "cached_page.html"
+DATA_FILE = "data.json"
 
 def get_html_content():
     # 1. Check if we already have the file saved locally
@@ -62,6 +64,10 @@ def datetime_title_parser(movie_list):
 
 def fetch_movie_data():
     try:
+
+
+
+
         # 1. Download the webpage
         response = get_html_content()
 
@@ -74,6 +80,12 @@ def fetch_movie_data():
         print(f"--- Found {len(items)} Items ---\n")
         print(type(items))
         flag = 0
+
+        json_list = []
+        id = 0
+
+
+        
         for item in items:
             # Extract text and strip out extra whitespace
             cinema = item.find("h2", class_="item-title").text.strip()
@@ -86,23 +98,43 @@ def fetch_movie_data():
 
             title_list, date_time_list = datetime_title_parser(movie_list)
 
-            if len(date_time_list) != len(title_list):
+            if len(date_time_list) != len(title_list): #Checks if the number of datetimes and movie titles are the same for each cinema
                 flag = 1
                 
                 
 
             ticket_prices = item.find("p", class_="summary").text.strip()
 
-            print(cinema)
+            '''print(cinema)
             print(location)
             print(title_list)
             print(date_time_list)
+            print(ticket_prices)'''
 
-            print(ticket_prices)
-        if flag == 1:
+            json_dict = {
+                    "id": id,
+                    "cinema": cinema,
+                    "location": location,
+                    "movies": title_list,
+                    "datetime": date_time_list
+            }
+            json_list.append(json_dict)
+            id += 1
+
+        print(json_list[0]["movies"][0])
+        
+
+        json_string = json.dumps(json_list, ensure_ascii=False)
+        with open(DATA_FILE, mode="w",encoding="utf-8") as file:
+            json.dump(json_string, file,indent = 2, ensure_ascii=False)
+        file.close()
+
+        if flag == 1: #Checks 
             print("somthing bad happand")
         elif flag == 0:
             print("all good") 
+
+
 
             
 

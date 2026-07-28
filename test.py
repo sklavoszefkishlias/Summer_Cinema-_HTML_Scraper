@@ -34,3 +34,16 @@ for item in items:
             t = t.text.strip()
             concated_datetime += t
         print(concated_datetime)
+
+
+
+
+
+thisdict = {
+
+    "id": 1,
+    "cinema": "Ford",
+    "location": "Mustang",
+    "movies": ["movie1", "movie2"],
+    "datetime": ["date1", "date2"]
+}
