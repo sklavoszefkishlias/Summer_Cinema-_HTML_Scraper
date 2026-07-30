@@ -3,6 +3,8 @@ import os
 from bs4 import BeautifulSoup
 import time
 import json
+
+
 # The URL of the page we want to scrape
 URL = "https://www.athinorama.gr/cinema/guide/therinoi/cinemas/"
 
@@ -12,31 +14,71 @@ HEADERS = {
 }
 
 CACHE_FILE = "cached_page.html"
+
+TIME_FILE = "time.txt"
+
 DATA_FILE = "data.json"
 
+def is_data_uptodate():
+    with open("time.txt") as f:
+        GOGO = f.read()
+    last_pull = float(GOGO)
+
+    if time.time() - last_pull < 86400 :
+        return 1
+    else:
+        return 0
+
+
+
 def get_html_content():
-    # 1. Check if we already have the file saved locally
-    if os.path.exists(CACHE_FILE) and (time.time() - os.path.getmtime(CACHE_FILE) < 86400): #Sees if you have relevant info(checks if its today's data)
-        print("📁 Found cached HTML file. Loading from disk...")
-        with open(CACHE_FILE, "r", encoding="utf-8") as file:
-            return file.read()
-            
-    # 2. If the file doesn't exist, download it from the internet
-    print("Requesting from live website...")
-    try:
-        response = requests.get(URL, headers=HEADERS)
-        response.raise_for_status()
+
+
+    if os.path.exists(CACHE_FILE) and os.path.exists(TIME_FILE):
+        if is_data_uptodate():
+            with open(CACHE_FILE, "r", encoding="utf-8") as file:
+                return file.read()
+        else:
+            #Requestes from webserver
+            print("Requesting from live website...")
+            try:
+                response = requests.get(URL, headers=HEADERS)
+                response.raise_for_status()
         
-        # Save the downloaded HTML to our local file for next time
-        with open(CACHE_FILE, "w", encoding="utf-8") as file:
-            file.write(response.text)
-            print(f"💾 Successfully saved webpage to '{CACHE_FILE}'")
+                # Save the downloaded HTML to our local file for next time
+                with open(CACHE_FILE, "w", encoding="utf-8") as file:
+                    file.write(response.text)
+                    print(f"💾 Successfully saved webpage to '{CACHE_FILE}'")
             
-        return response.text
+                return response.text
         
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Failed to retrieve the webpage: {e}")
-        return None
+            except requests.exceptions.RequestException as e:
+                print(f"❌ Failed to retrieve the webpage: {e}")
+                return None
+    else:
+        #Inititalises the time.txt file with the current time
+        with open("time.txt", "w", encoding="utf-8") as file:
+            file.write(str(time.time()))
+
+        #Requests from the web server
+        print("Requesting from live website for the first time...")
+        try:
+            response = requests.get(URL, headers=HEADERS)
+            response.raise_for_status()
+        
+            # Save the downloaded HTML to our local file for next time
+            with open(CACHE_FILE, "w", encoding="utf-8") as file:
+                file.write(response.text)
+                print(f"💾 Successfully saved webpage to '{CACHE_FILE}'")
+            
+            return response.text
+        
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Failed to retrieve the webpage: {e}")
+            return None
+
+
+
 
 
 def datetime_title_parser(movie_list):
@@ -105,11 +147,6 @@ def fetch_movie_data():
 
             ticket_prices = item.find("p", class_="summary").text.strip()
 
-            '''print(cinema)
-            print(location)
-            print(title_list)
-            print(date_time_list)
-            print(ticket_prices)'''
 
             json_dict = {
                     "id": id,
@@ -129,10 +166,10 @@ def fetch_movie_data():
             json.dump(json_string, file,indent = 2, ensure_ascii=False)
         file.close()
 
-        if flag == 1: #Checks 
+        '''if flag == 1: #Checks 
             print("somthing bad happand")
         elif flag == 0:
-            print("all good") 
+            print("all good") '''
 
 
 
